@@ -1,8 +1,7 @@
 ﻿namespace QueueReceiverService.Services
 {
-    public interface IQueueReceiverService
+    public interface IQueueSBService
     {
-        public Task ReceiveSQSMessages();
         public Task ReceiveSBMessages();
     }
 }

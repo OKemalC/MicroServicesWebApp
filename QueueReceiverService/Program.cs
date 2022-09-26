@@ -1,4 +1,5 @@
 using QueueReceiverService;
+using QueueReceiverService.Receivers;
 using QueueReceiverService.Services; 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -6,9 +7,12 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-builder.Services.AddTransient<IQueueReceiverService, ReceiverService>();
+builder.Services.AddTransient<IQueueSQSService, ReceiverSQSService>();
 
-builder.Services.AddHostedService<ReceivingWorker>();
+builder.Services.AddTransient<IQueueSBService , ReceiverSBService>();
+
+//builder.Services.AddHostedService<ReceivingSQSWorker>();
+builder.Services.AddHostedService<ReceivingSBWorker>();
 
 var app = builder.Build();
 
