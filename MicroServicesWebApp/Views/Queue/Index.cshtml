@@ -1,0 +1,10 @@
+﻿@model SendQueue
+@using (Html.BeginForm("SendMessage", "Queue", FormMethod.Post))
+{
+    @Html.TextAreaFor(model => model.Messages, new {@class="form-control",@placeholder="Enter text here to send it AWS SQS Service and Azure SB",@rows=6});//5,70,null
+    @Html.ValidationMessageFor(model => model.Messages);
+    <br><button type="submit" class="btn btn-success fa-solid fa-paper-plane">Send</button>
+}
+
+
+
