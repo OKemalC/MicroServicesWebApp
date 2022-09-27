@@ -13,39 +13,71 @@ namespace QueueReceiverService.Receivers
         static ServiceBusClientOptions? clientOptions;
         static ServiceBusClient? sbClient;
         static ServiceBusProcessor? processor;
+        static IQueueClient queueClient;
+        QueueMessage SBMessage = new QueueMessage();
         public ReceiverSBService(IConfiguration config)
         {
             _config = config; 
-
-            clientOptions = new ServiceBusClientOptions() { TransportType = ServiceBusTransportType.AmqpWebSockets };
-            sbClient = new ServiceBusClient(_config.GetConnectionString("AzureSBEndpoint"), clientOptions);
-            processor = sbClient.CreateProcessor(_config.GetConnectionString("AzureSBQueueName"), new ServiceBusProcessorOptions());
-
+             
+            queueClient= new QueueClient(_config.GetConnectionString("AzureSBEndpoint"), _config.GetConnectionString("AzureSBQueueName"));
+            var messageandlerOptions = new MessageHandlerOptions(ExceptionReceivedHandler)
+            {
+                MaxConcurrentCalls = 1,
+                AutoComplete = false
+            };
         }
 
         public async Task ReceiveSBMessages()
         {
-            SubscriptionClient subscriptionClient = new SubscriptionClient(_config.GetConnectionString("AzureSBEndpoint"), "SubServiceBus", _config.GetConnectionString("AzureSBQueueName"));
             try
             {
-                subscriptionClient.RegisterMessageHandler(
-                    async (message, token) =>
-                    {
-                        var messageJson = Encoding.UTF8.GetString(message.Body);
-                        string tryplss = messageJson.ToString();
-                        //var updateMessage = JsonConvert.DeserializeObject<QueueMessage>(messageJson);
+                queueClient.RegisterMessageHandler(
+                     async (message, token) =>
+                     {
+                         var messageJson = Encoding.UTF8.GetString(message.Body);
+                         string tryplss = messageJson.ToString();
+                         //SBMessage.ServiceBusMessage= messageJson.ToString();
+                         //var updateMessage = JsonConvert.DeserializeObject<QueueMessage>(messageJson);
 
-                        Console.WriteLine($"Received message with productId: {tryplss}");
+                         Console.WriteLine($"Received message with productId: {tryplss}");
 
-                        await subscriptionClient.CompleteAsync(message.SystemProperties.LockToken);
-                    },
-                    new MessageHandlerOptions(async args => Console.WriteLine(args.Exception))
-                    { MaxConcurrentCalls = 1, AutoComplete = false });
+                         await queueClient.CompleteAsync(message.SystemProperties.LockToken);
+                     },
+                     new MessageHandlerOptions(async args => Console.WriteLine(args.Exception))
+                     { MaxConcurrentCalls = 1, AutoComplete = false });
+                 
             }
             catch (Exception e)
             {
                 Console.WriteLine("Exception: " + e.Message);
             }
+            finally
+            {
+                await queueClient.UnregisterMessageHandlerAsync(new TimeSpan(10));
+            }
+            //return SBMessage.ServiceBusMessage;
+
+            //SubscriptionClient subscriptionClient = new SubscriptionClient(_config.GetConnectionString("AzureSBEndpoint"), "RedPandaServices", _config.GetConnectionString("AzureSBQueueName"));
+            //try
+            //{
+            //    subscriptionClient.RegisterMessageHandler(
+            //        async (message, token) =>
+            //        {
+            //            var messageJson = Encoding.UTF8.GetString(message.Body);
+            //            string tryplss = messageJson.ToString();
+            //            //var updateMessage = JsonConvert.DeserializeObject<QueueMessage>(messageJson);
+
+            //            Console.WriteLine($"Received message with productId: {tryplss}");
+
+            //            await subscriptionClient.CompleteAsync(message.SystemProperties.LockToken);
+            //        },
+            //        new MessageHandlerOptions(async args => Console.WriteLine(args.Exception))
+            //        { MaxConcurrentCalls = 1, AutoComplete = false });
+            //}
+            //catch (Exception e)
+            //{
+            //    Console.WriteLine("Exception: " + e.Message);
+            //}
             //try
             //{ 
             //    processor.ProcessMessageAsync += MessageHandler;
@@ -64,17 +96,37 @@ namespace QueueReceiverService.Receivers
             //}
 
         }
-        static async Task MessageHandler(ProcessMessageEventArgs args)
-        {
-            string body = args.Message.Body.ToString();
-            Console.WriteLine($"Received: {body}");
 
-            await args.CompleteMessageAsync(args.Message);
-        }
+        //public async Task<QueueMessage> ReceiveMessageAsync(bool isAzure = true)
+        //{
+        //    SBMessage.ServiceBusMessage = "Azure Service Bus has no message!"; 
+             
+        //    if ( isAzure == true)
+        //    {
+        //        await ReceiveSBMessages();
+        //    }
+          
+        //    return SBMessage;
+        //}
 
-        static Task ErrorHandler(ProcessErrorEventArgs args)
+
+
+        //static async Task MessageHandler(ProcessMessageEventArgs args)
+        //{
+        //    string body = args.Message.Body.ToString();
+        //    Console.WriteLine($"Received: {body}");
+
+        //    await args.CompleteMessageAsync(args.Message);
+        //}
+
+        //static Task ErrorHandler(ProcessErrorEventArgs args)
+        //{
+        //    Console.WriteLine(args.Exception.ToString());
+        //    return Task.CompletedTask;
+        //}
+        private static Task ExceptionReceivedHandler(ExceptionReceivedEventArgs arg)
         {
-            Console.WriteLine(args.Exception.ToString());
+            Console.WriteLine($"Error: {arg.Exception}");
             return Task.CompletedTask;
         }
 

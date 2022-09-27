@@ -11,7 +11,7 @@ builder.Services.AddTransient<IQueueSQSService, ReceiverSQSService>();
 
 builder.Services.AddTransient<IQueueSBService , ReceiverSBService>();
 
-//builder.Services.AddHostedService<ReceivingSQSWorker>();
+builder.Services.AddHostedService<ReceivingSQSWorker>();
 builder.Services.AddHostedService<ReceivingSBWorker>();
 
 var app = builder.Build();

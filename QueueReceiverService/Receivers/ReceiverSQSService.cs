@@ -14,7 +14,8 @@ namespace QueueReceiverService.Services
         private readonly IConfiguration _config; 
         static BasicAWSCredentials? credentials;
         static AmazonSQSClient? sqsClient;
-        static ReceiveMessageRequest? request; 
+        static ReceiveMessageRequest? request;
+        QueueMessage SQSMessage = new QueueMessage();
         
 
         public ReceiverSQSService(IConfiguration config)
@@ -34,8 +35,34 @@ namespace QueueReceiverService.Services
         {
             QueueMessage sqsMessage = new QueueMessage();
             var response = await sqsClient.ReceiveMessageAsync(request);
-            if (response.Messages.Count > 0) sqsMessage.Message = response.Messages.ToString();
+            try
+            {
+                if (response.Messages.Count > 0)
+                {
+                    string sqsmessage = response.Messages[0].Body.ToString();
+                    //SQSMessage.SQSMessage = sqsmessage;
+                    Console.WriteLine($"Amazon {sqsmessage}");
+                    sqsMessage.Message = response.Messages.ToString();
+                }
+            }
+            catch (Exception ex)
+            {
+                 Console.WriteLine(ex.Message);
+            }
+            //return SQSMessage.SQSMessage;
+            // await sqsClient.DeleteMessageAsync(_config.GetConnectionString("AwsAccessKey"), response.Messages[0].ReceiptHandle); 
+        }
+        //public async Task<QueueMessage> ReceiveMessageAsync(bool isAzure = true)
+        //{
+        //    SQSMessage.SQSMessage = "amazon sage!";
 
-        } 
+        //    if (isAzure == true)
+        //    {
+        //        await ReceiveSQSMessages();
+        //    }
+
+        //    return SQSMessage;
+        //}
     }
 }
+
