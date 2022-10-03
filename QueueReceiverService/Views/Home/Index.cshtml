@@ -1,6 +1,6 @@
-﻿@model QueueMessage
+﻿@model QueueReceiverService.Models.QueueMessage
 @{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Home Page";   
 }
 
 <div class="text-center">
@@ -11,12 +11,32 @@
 <div>
     <ul>
         <li>
-            <p class="display-6"> 
-       @Model.SQSMessage
-
-                
-            </p>
+            <div class="col-md-6 border border-dark mt-6">
+                <p style=" font-size:30px; text-align:center;">AWS.SQS</p>
+                <p class="display-6">@Model.SQSMessage</p>
+            </div>
         </li>
-       
+
     </ul>
 </div>
+
+@Html.TextBoxFor(m => m.SQSMessage, new { @id = "txtBox", @disabled = "disabled" });
+
+@section scripts {
+
+<script>
+
+    var textBox = document.getElementById('txtBox');
+
+    function time() {
+        //<td><%= Html.Action("ModelReturn")%></td> 
+        textBox.value = @ViewBag.SQS; 
+           //("0" + h).substr(-2) + ":" + ("0" + m).substr(-2) + ":" + ("0" + s).substr(-2);
+    } 
+    setInterval(time, 5000);
+
+</script>
+
+}
+
+

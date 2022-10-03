@@ -15,8 +15,7 @@ namespace QueueReceiverService.Services
         static BasicAWSCredentials? credentials;
         static AmazonSQSClient? sqsClient;
         static ReceiveMessageRequest? request;
-        QueueMessage SQSMessage = new QueueMessage();
-        
+        QueueMessage ReceivedMessage = new QueueMessage(); 
 
         public ReceiverSQSService(IConfiguration config)
         {
@@ -31,7 +30,22 @@ namespace QueueReceiverService.Services
             };
  
         }
-        public async Task ReceiveSQSMessages()
+        public async Task<QueueMessage> ReceiveMessageAsync(bool isAmazon = true)
+        {
+
+            if (isAmazon == true  )
+            { 
+                await ReceiveSQSMessages();
+               // await AzureReceiveMsgAsync();
+            }
+            //else
+            //{
+            //    if (isAmazon == true) await AmazonReceiveMsgAsync();
+            //    else await AzureReceiveMsgAsync();
+            //}
+            return ReceivedMessage;
+        }
+        public async Task<string> ReceiveSQSMessages()
         {
             QueueMessage sqsMessage = new QueueMessage();
             var response = await sqsClient.ReceiveMessageAsync(request);
@@ -40,17 +54,24 @@ namespace QueueReceiverService.Services
                 if (response.Messages.Count > 0)
                 {
                     string sqsmessage = response.Messages[0].Body.ToString();
+                    ReceivedMessage.SQSMessage = response.Messages[0].Body.ToString();
                     //SQSMessage.SQSMessage = sqsmessage;
                     Console.WriteLine($"Amazon {sqsmessage}");
                     sqsMessage.Message = response.Messages.ToString();
+                    await sqsClient.DeleteMessageAsync(_config.GetConnectionString("AmazonQueueUrl"), response.Messages[0].ReceiptHandle);
                 }
+
             }
             catch (Exception ex)
             {
-                 Console.WriteLine(ex.Message);
+                Console.WriteLine(ex.Message);
             }
-            //return SQSMessage.SQSMessage;
-            // await sqsClient.DeleteMessageAsync(_config.GetConnectionString("AwsAccessKey"), response.Messages[0].ReceiptHandle); 
+            MyGlobalVariables.MyGlobalString = ReceivedMessage.SQSMessage.ToString();
+
+            return ReceivedMessage.SQSMessage;
+            
+
+
         }
         //public async Task<QueueMessage> ReceiveMessageAsync(bool isAzure = true)
         //{

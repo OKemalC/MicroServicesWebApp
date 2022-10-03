@@ -9,15 +9,24 @@ namespace QueueReceiverService.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger; 
+        private readonly IQueueSBService _queueSBService;
+        private readonly IQueueSQSService _queueSQSService;
+        QueueMessage model = new QueueMessage();
 
-        public HomeController(ILogger<HomeController> logger) 
+        public HomeController(ILogger<HomeController> logger, IQueueSBService queueSBService, IQueueSQSService queueSQSService)
         {
-            _logger = logger; 
+            _logger = logger;
+            _queueSBService = queueSBService;
+            _queueSQSService = queueSQSService;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-             return View();
+            //QueueMessage model = new QueueMessage();
+            //model = await _queueSBService.ReceiveMessageAsync();
+            model = await _queueSQSService.ReceiveMessageAsync();
+            ViewBag.sqs = model.SQSMessage;
+            return View(model); 
         }
 
         public IActionResult Privacy()
@@ -29,6 +38,11 @@ namespace QueueReceiverService.Controllers
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        } 
+        public string ModelReturn()
+        { 
+            ViewBag.sqs = model.SQSMessage;
+            return  model.SQSMessage;
         }
  
     }

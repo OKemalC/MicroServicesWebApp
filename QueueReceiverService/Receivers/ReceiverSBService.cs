@@ -15,6 +15,7 @@ namespace QueueReceiverService.Receivers
         static ServiceBusProcessor? processor;
         static IQueueClient queueClient;
         QueueMessage SBMessage = new QueueMessage();
+        string UUUUMessage = "";
         public ReceiverSBService(IConfiguration config)
         {
             _config = config; 
@@ -27,7 +28,7 @@ namespace QueueReceiverService.Receivers
             };
         }
 
-        public async Task ReceiveSBMessages()
+        public async Task<string> ReceiveSBMessages()
         {
             try
             {
@@ -36,8 +37,9 @@ namespace QueueReceiverService.Receivers
                      {
                          var messageJson = Encoding.UTF8.GetString(message.Body);
                          string tryplss = messageJson.ToString();
-                         //SBMessage.ServiceBusMessage= messageJson.ToString();
-                         //var updateMessage = JsonConvert.DeserializeObject<QueueMessage>(messageJson);
+                         UUUUMessage = messageJson.ToString();
+                         //SBMessage.ServiceBusMessage= messageJson.
+                         //SBMessage = JsonConvert.DeserializeObject<QueueMessage>(messageJson);
 
                          Console.WriteLine($"Received message with productId: {tryplss}");
 
@@ -55,7 +57,8 @@ namespace QueueReceiverService.Receivers
             {
                 await queueClient.UnregisterMessageHandlerAsync(new TimeSpan(10));
             }
-            //return SBMessage.ServiceBusMessage;
+            SBMessage.ServiceBusMessage = UUUUMessage;
+            return SBMessage.ServiceBusMessage;
 
             //SubscriptionClient subscriptionClient = new SubscriptionClient(_config.GetConnectionString("AzureSBEndpoint"), "RedPandaServices", _config.GetConnectionString("AzureSBQueueName"));
             //try
@@ -97,17 +100,17 @@ namespace QueueReceiverService.Receivers
 
         }
 
-        //public async Task<QueueMessage> ReceiveMessageAsync(bool isAzure = true)
-        //{
-        //    SBMessage.ServiceBusMessage = "Azure Service Bus has no message!"; 
-             
-        //    if ( isAzure == true)
-        //    {
-        //        await ReceiveSBMessages();
-        //    }
-          
-        //    return SBMessage;
-        //}
+        public async Task<QueueMessage> ReceiveMessageAsync(bool isAzure = true)
+        {
+            SBMessage.ServiceBusMessage = "Azure Service Bus has no message!";
+
+            if (isAzure == true)
+            {
+                await ReceiveSBMessages();
+            }
+
+            return SBMessage;
+        }
 
 
 
