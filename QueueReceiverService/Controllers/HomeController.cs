@@ -8,23 +8,19 @@ namespace QueueReceiverService.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger; 
-        private readonly IQueueSBService _queueSBService;
-        private readonly IQueueSQSService _queueSQSService;
+        private readonly ILogger<HomeController> _logger;  
+        private readonly IQueueReceiverService _queueService;
         QueueMessage model = new QueueMessage();
 
-        public HomeController(ILogger<HomeController> logger, IQueueSBService queueSBService, IQueueSQSService queueSQSService)
+        public HomeController(ILogger<HomeController> logger, IQueueReceiverService queueService)
         {
-            _logger = logger;
-            _queueSBService = queueSBService;
-            _queueSQSService = queueSQSService;
+            _logger = logger; 
+            _queueService= queueService;
         }
 
         public async Task<IActionResult> Index()
         {
-            //QueueMessage model = new QueueMessage();
-            //model = await _queueSBService.ReceiveMessageAsync();
-            model = await _queueSQSService.ReceiveMessageAsync();
+            model = await _queueService.ReceiveMessageAsync();
             ViewBag.sqs = model.SQSMessage;
             return View(model); 
         }

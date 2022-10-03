@@ -7,8 +7,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
 
-//builder.Services.AddTransient<IQueueSQSService, ReceiverSQSService>();
-//builder.Services.AddTransient<IQueueSBService , ReceiverSBService>();
 builder.Services.AddTransient<IQueueReceiverService , ReceiverService>();
 
 builder.Services.AddHostedService<ReceivingWorker>();

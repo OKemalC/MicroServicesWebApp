@@ -13,9 +13,6 @@ namespace QueueReceiverService.Receivers
     public class ReceiverService : IQueueReceiverService
     {
         private readonly IConfiguration _config;
-        static ServiceBusClientOptions? clientOptions;
-        static ServiceBusClient? sbClient;
-        static ServiceBusProcessor? processor;
         static IQueueClient queueClient;
         QueueMessage QueueMessage = new QueueMessage(); 
         static BasicAWSCredentials? credentials;
@@ -97,7 +94,7 @@ namespace QueueReceiverService.Receivers
                     ReceivedMessage.SQSMessage = response.Messages[0].Body.ToString();
                     //SQSMessage.SQSMessage = sqsmessage;
                     Console.WriteLine($"Amazon {sqsmessage}");
-                    sqsMessage.Message = response.Messages.ToString();
+                    sqsMessage.SQSMessage = response.Messages.ToString();
                     await sqsClient.DeleteMessageAsync(_config.GetConnectionString("AmazonQueueUrl"), response.Messages[0].ReceiptHandle);
                 }
 
